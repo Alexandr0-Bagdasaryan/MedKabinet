@@ -1,0 +1,21 @@
+package ru.bagdasaryan.springkotlin.medkabinet.exposed.tables
+
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.javatime.date
+import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
+
+object Doctors : IntIdTable("doctors") {
+    val firstName = text("first_name")
+    val lastName = text("last_name")
+    val middleName = text("middle_name")
+    val specializationId = integer("specialization_id")
+    val departmentId = integer("department_id")
+    val licenseNumber = text("license_number")
+    val licenseValidUntil = date("license_valid_until")
+    val phone = text("phone")
+    val email = text("email")
+    val appointmentDurationMinutes = short("appointment_duration_minutes")
+    val isActive = bool("is_active")
+    val createdAt = timestampWithTimeZone("created_at")
+    val updatedAt = timestampWithTimeZone("updated_at")
+}
