@@ -1,8 +1,7 @@
 package ru.bagdasaryan.springkotlin.medkabinet.controller
 
 import kotlinx.html.*
-import kotlinx.html.stream.appendHTML
-import org.jetbrains.exposed.dao.id.IntIdTable
+import kotlinx.html.stream.createHTML
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -14,7 +13,7 @@ import ru.bagdasaryan.springkotlin.medkabinet.service.DoctorService
 import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 
 @RestController
 class MenuController(
@@ -35,6 +34,23 @@ class MenuController(
         )
 
         return ResponseEntity.ok(html)
+    }
+
+    @GetMapping("/doctors/search", produces = ["text/html; charset=UTF-8"])
+    suspend fun doctorsSearch(
+        @RequestParam(name = "q", required = false) q: String?
+    ): ResponseEntity<String> {
+        val doctors = findDoctors(q)
+        return ResponseEntity.ok(renderDoctorsRows(doctors))
+    }
+
+    private suspend fun findDoctors(q: String?): List<DoctorRepository.DoctorDTO> {
+        if (q.isNullOrBlank()) return doctorService.findAll().getOrThrow()
+
+        return runCatching {
+            val fio = Fio.parse(q)
+            doctorService.findByFio(fio).getOrElse { emptyList() }
+        }.getOrElse { emptyList() }
     }
 
     @GetMapping("/doctors", produces = ["text/html; charset=UTF-8"])
@@ -194,33 +210,16 @@ class MenuController(
             NavItem("Врачи", "/doctors", active = true)
         )
     ) {
-        form(action = "/doctors", method = FormMethod.get) {
-            classes = setOf("mb-3")
-            div("input-group") {
-                input(InputType.search, name = "q") {
-                    classes = setOf("form-control")
-                    placeholder = "Поиск по ФИО"
-                    value = q
-                }
-                button(type = ButtonType.submit) {
-                    classes = setOf("btn", "btn-primary")
-                    +"Найти"
-                }
-            }
-        }
-
         div {
             classes = setOf("d-flex", "justify-content-between", "align-items-center", "mb-3")
             h1("h3 mb-0") { +"Врачи" }
             span("text-muted") { +"Всего врачей: ${doctors.size}" }
         }
 
-        div {
-            classes = setOf("card", "shadow-sm")
+        div("card shadow-sm") {
             div("card-body") {
                 div("table-responsive") {
-                    table {
-                        classes = setOf("table", "table-striped", "table-hover", "align-middle", "mb-0")
+                    table("table table-striped table-hover align-middle mb-0") {
                         thead {
                             tr {
                                 th { scope = ThScope.col; +"ФИО" }
@@ -229,24 +228,43 @@ class MenuController(
                                 th { scope = ThScope.col; +"Отделение" }
                                 th { scope = ThScope.col; +"Лицензия до" }
                             }
+                            tr {
+                                th {
+                                    input(InputType.search) {
+                                        name = "q"
+                                        value = q
+                                        classes = setOf("form-control", "form-control-sm")
+                                        placeholder = "Фильтр по ФИО"
+                                        attributes["hx-get"] = "/doctors/search"
+                                        attributes["hx-trigger"] = "keyup changed delay:300ms"
+                                        attributes["hx-target"] = "#doctors-table-body"
+                                        attributes["hx-swap"] = "innerHTML"
+                                    }
+                                }
+                                th {}
+                                th {}
+                                th {}
+                                th {}
+                            }
                         }
                         tbody {
-                            doctors.forEach { doctor ->
-                                tr {
-                                    td {
-                                        +listOf(doctor.lastName, doctor.firstName, doctor.middleName).joinToString(" ")
-                                            .trim()
-                                    }
-                                    td { +doctor.email }
-                                    td { +doctor.phone }
-                                    td { +"${doctor.departmentId}" }
-                                    td { +"${doctor.licenseValidUntil}" }
-                                }
-                            }
+                            id = "doctors-table-body"
+                            doctors.forEach { unsafe { +renderDoctorRow(it) } }
                         }
                     }
                 }
             }
         }
     }
+}
+
+private fun renderDoctorsRows(doctors: List<DoctorRepository.DoctorDTO>): String =
+    doctors.joinToString(separator = "") { renderDoctorRow(it) }
+
+private fun renderDoctorRow(doctor: DoctorRepository.DoctorDTO): String = createHTML().tr {
+    td { +listOf(doctor.lastName, doctor.firstName, doctor.middleName).joinToString(" ").trim() }
+    td { +doctor.email }
+    td { +doctor.phone }
+    td { +"${doctor.departmentId}" }
+    td { +"${doctor.licenseValidUntil}" }
 }

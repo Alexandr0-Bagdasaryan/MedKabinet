@@ -13,6 +13,8 @@ private const val BOOTSTRAP_CSS =
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
 private const val BOOTSTRAP_JS =
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+private const val HTMX =
+    "https://unpkg.com/htmx.org@1.9.12"
 
 /**
  * Базовый шаблон страницы:
@@ -94,5 +96,6 @@ fun appLayout(
         }
 
         script(src = BOOTSTRAP_JS) {}
+        script(src = HTMX) {}
     }
 }
