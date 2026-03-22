@@ -35,4 +35,5 @@ build/
 
 init-scripts
 docker-compose.yml
+docker-compose-postgres.yml
 .env

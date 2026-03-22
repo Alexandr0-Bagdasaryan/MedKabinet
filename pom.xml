@@ -94,6 +94,10 @@
             <version>${exposed.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-reactor</artifactId>
+        </dependency>
         <!--  DAO API (Entity/IntEntity) -->
         <dependency>
             <groupId>org.jetbrains.exposed</groupId>

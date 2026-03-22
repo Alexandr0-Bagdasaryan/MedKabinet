@@ -2,27 +2,27 @@ package ru.bagdasaryan.springkotlin.medkabinet.controller
 
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ru.bagdasaryan.springkotlin.medkabinet.pages.NavItem
 import ru.bagdasaryan.springkotlin.medkabinet.pages.appLayout
+import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository
+import ru.bagdasaryan.springkotlin.medkabinet.service.DoctorService
+import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @RestController
-class MenuController {
+class MenuController(
+    private val doctorService: DoctorService
+) {
     @GetMapping("/schedule", produces = ["text/html; charset=UTF-8"])
-    fun schedulePage() : ResponseEntity<String>{
-        // test Data
-        val demoRows = listOf(
-            AppointmentRow("09:00", "Иванов А.А.", "Терапевт", "101", Status.AVAILABLE),
-            AppointmentRow("09:30", "Петрова И.В.", "Кардиолог", "203", Status.BOOKED, "Повторный приём"),
-            AppointmentRow("10:00", "Сидоров М.Н.", "Невролог", "305", Status.URGENT, "Окно для экстренных"),
-            AppointmentRow("10:30", "—", "—", "—", Status.BREAK, "Технический перерыв"),
-            AppointmentRow("11:00", "Кузнецова Е.С.", "Эндокринолог", "210", Status.AVAILABLE)
-        )
+    suspend fun schedulePage(): ResponseEntity<String> {
+        val demoRows = doctorService.findAll().getOrThrow()
 
         val date = LocalDate.now()
 
@@ -37,14 +37,19 @@ class MenuController {
         return ResponseEntity.ok(html)
     }
 
-    data class AppointmentRow(
-        val time: String,
-        val doctor: String,
-        val specialty: String,
-        val room: String,
-        val status: Status,
-        val comment: String? = null
-    )
+    @GetMapping("/doctors", produces = ["text/html; charset=UTF-8"])
+    suspend fun doctorsPage(
+        @RequestParam(name = "q", required = false) q: String?
+    ): ResponseEntity<String> {
+        val doctors = if (q.isNullOrBlank()) {
+            doctorService.findAll().getOrThrow()
+        } else {
+            val fio = Fio.parse(q)
+            doctorService.findByFio(fio).getOrElse { emptyList() }
+        }
+
+        return ResponseEntity.ok(clinicDoctorsPage(doctors, q.orEmpty()))
+    }
 
     enum class Status(val text: String, val badgeClasses: Set<String>) {
         AVAILABLE("Свободно", setOf("bg-success")),
@@ -55,7 +60,7 @@ class MenuController {
 
     fun clinicSchedulePage(
         dateLabel: String,
-        rows: List<AppointmentRow>
+        rows: List<DoctorRepository.DoctorDTO>
     ): String = appLayout(
         pageTitle = "Расписание",
         brandHref = "/",
@@ -67,9 +72,6 @@ class MenuController {
             NavItem("Врачи", "/doctors")
         )
     ) {
-        // ВНУТРИ appLayout рисуем только содержимое main-контейнера
-
-        // Header + legend
         div {
             classes = setOf(
                 "d-flex", "flex-wrap", "justify-content-between",
@@ -81,18 +83,17 @@ class MenuController {
             }
             div {
                 classes = setOf("d-flex", "flex-wrap", "gap-2")
-                legendBadge("Свободно", setOf("bg-success"))
-                legendBadge("Занято", setOf("bg-secondary"))
-                legendBadge("Срочно", setOf("bg-danger"))
-                legendBadge("Перерыв", setOf("bg-warning", "text-dark"))
+                Status.entries.forEach { status ->
+                    legendBadge(status.text, status.badgeClasses)
+                }
             }
         }
 
-        // Filter card (UI only)
         div {
             classes = setOf("card", "shadow-sm", "mb-4")
             div("card-body") {
-                div { classes = setOf("row", "g-3", "align-items-end")
+                div {
+                    classes = setOf("row", "g-3", "align-items-end")
 
                     div {
                         classes = setOf("col-12", "col-md-4")
@@ -127,7 +128,6 @@ class MenuController {
             }
         }
 
-        // Table card
         div {
             classes = setOf("card", "shadow-sm")
             div("card-header") {
@@ -137,9 +137,15 @@ class MenuController {
             }
             div("card-body") {
                 div {
-                    classes = setOf("table-responsive") // wrapper for responsive tables [web:72]
+                    classes = setOf("table-responsive")
                     table {
-                        classes = setOf("table", "table-striped", "table-hover", "align-middle", "mb-0") // Bootstrap table classes [web:71]
+                        classes = setOf(
+                            "table",
+                            "table-striped",
+                            "table-hover",
+                            "align-middle",
+                            "mb-0"
+                        )
                         thead {
                             tr {
                                 th { scope = ThScope.col; +"Время" }
@@ -154,35 +160,13 @@ class MenuController {
                         tbody {
                             rows.forEach { r ->
                                 tr {
-                                    td { +r.time }
-                                    td { +r.doctor }
-                                    td { +r.specialty }
-                                    td { +r.room }
-                                    td {
-                                        span {
-                                            classes = setOf("badge", "rounded-pill") + r.status.badgeClasses
-                                            +r.status.text
-                                        }
-                                    }
-                                    td { +(r.comment ?: "—") }
-                                    td {
-                                        when (r.status) {
-                                            Status.AVAILABLE -> button {
-                                                classes = setOf("btn", "btn-sm", "btn-success")
-                                                +"Записаться"
-                                            }
-                                            Status.BOOKED -> button {
-                                                classes = setOf("btn", "btn-sm", "btn-outline-secondary")
-                                                disabled = true
-                                                +"Недоступно"
-                                            }
-                                            Status.URGENT -> button {
-                                                classes = setOf("btn", "btn-sm", "btn-danger")
-                                                +"Уточнить"
-                                            }
-                                            Status.BREAK -> span("text-muted") { +"—" }
-                                        }
-                                    }
+                                    td { +r.firstName }
+                                    td { +r.lastName }
+                                    td { +r.middleName }
+                                    td { +r.departmentId }
+                                    td { +r.email }
+                                    td { +r.phone }
+                                    td { +r.licenseValidUntil }
                                 }
                             }
                         }
@@ -192,11 +176,77 @@ class MenuController {
         }
     }
 
-
-    private fun FlowContent.legendBadge(text: String, badgeClasses: Set<String>) {
+    fun FlowContent.legendBadge(text: String, badgeClasses: Set<String>) {
         span {
             classes = setOf("badge", "rounded-pill") + badgeClasses
             +text
+        }
+    }
+
+    fun clinicDoctorsPage(doctors: List<DoctorRepository.DoctorDTO>, q: String = ""): String = appLayout(
+        pageTitle = "Врачи",
+        brandHref = "/",
+        logoUrl = "/img/logo.svg",
+        nav = listOf(
+            NavItem("Главная", "/"),
+            NavItem("Расписание", "/schedule"),
+            NavItem("Пациенты", "/patients"),
+            NavItem("Врачи", "/doctors", active = true)
+        )
+    ) {
+        form(action = "/doctors", method = FormMethod.get) {
+            classes = setOf("mb-3")
+            div("input-group") {
+                input(InputType.search, name = "q") {
+                    classes = setOf("form-control")
+                    placeholder = "Поиск по ФИО"
+                    value = q
+                }
+                button(type = ButtonType.submit) {
+                    classes = setOf("btn", "btn-primary")
+                    +"Найти"
+                }
+            }
+        }
+
+        div {
+            classes = setOf("d-flex", "justify-content-between", "align-items-center", "mb-3")
+            h1("h3 mb-0") { +"Врачи" }
+            span("text-muted") { +"Всего врачей: ${doctors.size}" }
+        }
+
+        div {
+            classes = setOf("card", "shadow-sm")
+            div("card-body") {
+                div("table-responsive") {
+                    table {
+                        classes = setOf("table", "table-striped", "table-hover", "align-middle", "mb-0")
+                        thead {
+                            tr {
+                                th { scope = ThScope.col; +"ФИО" }
+                                th { scope = ThScope.col; +"Email" }
+                                th { scope = ThScope.col; +"Телефон" }
+                                th { scope = ThScope.col; +"Отделение" }
+                                th { scope = ThScope.col; +"Лицензия до" }
+                            }
+                        }
+                        tbody {
+                            doctors.forEach { doctor ->
+                                tr {
+                                    td {
+                                        +listOf(doctor.lastName, doctor.firstName, doctor.middleName).joinToString(" ")
+                                            .trim()
+                                    }
+                                    td { +doctor.email }
+                                    td { +doctor.phone }
+                                    td { +"${doctor.departmentId}" }
+                                    td { +"${doctor.licenseValidUntil}" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
