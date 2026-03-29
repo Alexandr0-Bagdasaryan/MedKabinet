@@ -87,6 +87,12 @@ fun appLayout(
             content()
         }
 
+        div {
+            id = "toast-error-container"
+            classes = setOf("position-fixed", "bottom-0", "end-0", "p-3")
+            attributes["style"] = "z-index: 1080; max-width: 420px;"
+        }
+
         // Footer
         footer {
             classes = setOf("border-top")
@@ -95,7 +101,51 @@ fun appLayout(
             }
         }
 
-        script(src = BOOTSTRAP_JS) {}
         script(src = HTMX) {}
+        script(src = BOOTSTRAP_JS) {}
+
+        script {
+            unsafe {
+                +"""
+(function () {
+  function showError(message) {
+    const container = document.getElementById('toast-error-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-bg-danger border-0 show mb-2';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${'$'}{message || 'Произошла ошибка'}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto"></button>
+      </div>
+    `;
+
+    toast.querySelector('.btn-close')?.addEventListener('click', () => toast.remove());
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+
+  document.body.addEventListener('htmx:afterRequest', function (evt) {
+    const xhr = evt.detail?.xhr;
+    if (!evt.detail?.failed) return;
+
+    const status = xhr?.status ?? 0;
+    const reason =
+      xhr?.getResponseHeader('X-Error-Message')?.trim() ||
+      xhr?.responseText?.trim() ||
+      'Неизвестная ошибка';
+
+    showError(`Ошибка ${'$'}{status}: ${'$'}{reason}`);
+  });
+
+  document.body.addEventListener('htmx:sendError', function () {
+    showError('Ошибка сети: проверьте соединение');
+  });
+})();
+""".trimIndent()
+            }
+        }
     }
 }

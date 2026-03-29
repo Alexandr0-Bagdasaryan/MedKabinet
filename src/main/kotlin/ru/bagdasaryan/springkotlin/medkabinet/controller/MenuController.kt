@@ -46,11 +46,8 @@ class MenuController(
 
     private suspend fun findDoctors(q: String?): List<DoctorRepository.DoctorDTO> {
         if (q.isNullOrBlank()) return doctorService.findAll().getOrThrow()
-
-        return runCatching {
-            val fio = Fio.parse(q)
-            doctorService.findByFio(fio).getOrElse { emptyList() }
-        }.getOrElse { emptyList() }
+        val fio = Fio.parse(q)
+        return doctorService.findByFio(fio).getOrThrow()
     }
 
     @GetMapping("/doctors", produces = ["text/html; charset=UTF-8"])
@@ -265,6 +262,6 @@ private fun renderDoctorRow(doctor: DoctorRepository.DoctorDTO): String = create
     td { +listOf(doctor.lastName, doctor.firstName, doctor.middleName).joinToString(" ").trim() }
     td { +doctor.email }
     td { +doctor.phone }
-    td { +"${doctor.departmentId}" }
-    td { +"${doctor.licenseValidUntil}" }
+    td { +doctor.departmentId }
+    td { +doctor.licenseValidUntil }
 }

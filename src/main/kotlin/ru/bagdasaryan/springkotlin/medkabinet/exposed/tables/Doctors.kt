@@ -5,9 +5,9 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
 
 object Doctors : IntIdTable("doctors") {
-    val firstName = text("first_name")
-    val lastName = text("last_name")
-    val middleName = text("middle_name")
+    val name = text("first_name")
+    val surname = text("last_name")
+    val patronymic = text("middle_name")
     val specializationId = integer("specialization_id")
     val departmentId = integer("department_id")
     val licenseNumber = text("license_number")
