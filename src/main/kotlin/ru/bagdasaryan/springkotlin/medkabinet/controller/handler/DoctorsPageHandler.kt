@@ -49,7 +49,6 @@ class DoctorsPageHandler(
     ): String = appLayout(
         pageTitle = "Врачи",
         brandHref = "/",
-        logoUrl = "/img/logo.svg",
         nav = listOf(
             NavItem("Главная", "/"),
             NavItem("Расписание", "/schedule"),

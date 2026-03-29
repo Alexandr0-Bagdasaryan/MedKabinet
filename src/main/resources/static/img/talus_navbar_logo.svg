@@ -1,0 +1,23 @@
+<svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg">
+
+  <g transform="translate(20, 20) scale(0.26)">
+    <path d="M0,-68 L50,-46 L50,8 Q50,52 0,70 Q-50,52 -50,8 L-50,-46 Z"
+      fill="#ffffff" opacity="1.15" stroke="#007bff" stroke-width="1.4"/>
+    <path d="M0,-56 L40,-38 L40,6 Q40,42 0,58 Q-40,42 -40,6 L-40,-38 Z"
+      fill="#007bff"/>
+    <rect x="-26" y="-24" width="52" height="34" rx="5" fill="#ffffff" opacity="0.3"/>
+    <rect x="-20" y="-18" width="40" height="22" rx="3" fill="#ffffff" opacity="0.25"/>
+    <rect x="-3.5" y="-14" width="7" height="18" rx="2" fill="#ffffff" opacity="0.9"/>
+    <rect x="-10" y="-8" width="20" height="5" rx="2" fill="#ffffff" opacity="0.9"/>
+    <rect x="-2.5" y="10" width="5" height="6" rx="1" fill="#ffffff" opacity="0.4"/>
+    <rect x="-9" y="16" width="18" height="2.5" rx="1.2" fill="#ffffff" opacity="0.35"/>
+  </g>
+
+  <text x="44" y="27"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="22"
+    font-weight="700"
+    letter-spacing="3"
+    fill="#ffffff">TALUS</text>
+
+</svg>

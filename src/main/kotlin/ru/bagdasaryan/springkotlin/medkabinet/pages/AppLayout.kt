@@ -24,9 +24,9 @@ private const val HTMX =
  */
 fun appLayout(
     pageTitle: String,
-    brandName: String = "MedKabinet",
+    brandName: String = "TALUS",
     brandHref: String = "/",
-    logoUrl: String = "/img/logo.svg",   // положи в src/main/resources/static/img/logo.svg
+    logoUrl: String = "/img/talus_navbar_logo.svg",
     nav: List<NavItem>,
     content: FlowContent.() -> Unit
 ): String = createHTML().html {
@@ -40,16 +40,13 @@ fun appLayout(
     body {
         // Navbar (бренд + collapse + ссылки)
         nav {
-            classes = setOf("navbar", "navbar-expand-lg", "navbar-dark", "bg-primary")
+            classes = setOf("navbar", "navbar-expand-lg", "navbar-dark", "bg-primary", "py-1")
             div("container") {
-
-                a(href = brandHref, classes = "navbar-brand d-flex align-items-center gap-2") {
+                a(href = brandHref, classes = "navbar-brand d-flex align-items-center") {
                     img(alt = "$brandName logo", src = logoUrl) {
-                        width = "28"
-                        height = "28"
-                        classes = setOf("rounded")
+                        height = "36"
+                        attributes["style"] = "width: auto;"
                     }
-                    span { +brandName }
                 }
 
                 button(classes = "navbar-toggler", type = ButtonType.button) {

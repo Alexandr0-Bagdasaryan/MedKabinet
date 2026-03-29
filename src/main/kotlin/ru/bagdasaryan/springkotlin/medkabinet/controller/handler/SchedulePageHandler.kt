@@ -39,7 +39,6 @@ class SchedulePageHandler(
     ): String = appLayout(
         pageTitle = "Расписание",
         brandHref = "/",
-        logoUrl = "/img/logo.svg",
         nav = listOf(
             NavItem("Главная", "/"),
             NavItem("Расписание", "/schedule", active = true),
