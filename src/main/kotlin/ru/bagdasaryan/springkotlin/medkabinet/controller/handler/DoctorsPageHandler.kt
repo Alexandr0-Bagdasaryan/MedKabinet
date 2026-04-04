@@ -19,7 +19,7 @@ import kotlinx.html.unsafe
 import org.springframework.stereotype.Component
 import ru.bagdasaryan.springkotlin.medkabinet.pages.NavItem
 import ru.bagdasaryan.springkotlin.medkabinet.pages.appLayout
-import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository
+import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.DoctorRepository
 import ru.bagdasaryan.springkotlin.medkabinet.service.DoctorService
 import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio
 
@@ -29,12 +29,12 @@ class DoctorsPageHandler(
 ) {
     suspend fun renderPage(q: String?): String {
         val doctors = findDoctors(q)
-        return clinicDoctorsPage(doctors, q.orEmpty()) // private fun внутри этого класса
+        return clinicDoctorsPage(doctors, q.orEmpty())
     }
 
     suspend fun renderRows(q: String?): String {
         val doctors = findDoctors(q)
-        return renderDoctorsRows(doctors) // private fun внутри этого класса
+        return renderDoctorsRows(doctors)
     }
 
     private suspend fun findDoctors(q: String?): List<DoctorRepository.DoctorDTO> {
@@ -53,7 +53,8 @@ class DoctorsPageHandler(
             NavItem("Главная", "/"),
             NavItem("Расписание", "/schedule"),
             NavItem("Пациенты", "/patients"),
-            NavItem("Врачи", "/doctors", active = true)
+            NavItem("Врачи", "/doctors", active = true),
+            NavItem("Записи", "/appointments")
         )
     ) {
         div {
@@ -113,5 +114,4 @@ class DoctorsPageHandler(
         td { +doctor.departmentId }
         td { +doctor.licenseValidUntil }
     }
-
 }

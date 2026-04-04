@@ -1,4 +1,4 @@
-package ru.bagdasaryan.springkotlin.medkabinet.repository
+package ru.bagdasaryan.springkotlin.medkabinet.storage.repository
 
 import org.springframework.stereotype.Repository
 import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio

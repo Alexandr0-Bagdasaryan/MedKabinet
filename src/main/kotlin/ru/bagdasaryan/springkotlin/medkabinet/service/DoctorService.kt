@@ -1,7 +1,7 @@
 package ru.bagdasaryan.springkotlin.medkabinet.service
 
 import org.springframework.stereotype.Service
-import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository
+import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.DoctorRepository
 import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio
 
 @Service

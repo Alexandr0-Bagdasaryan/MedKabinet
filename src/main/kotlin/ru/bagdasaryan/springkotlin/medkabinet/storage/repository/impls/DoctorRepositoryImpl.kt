@@ -1,4 +1,4 @@
-package ru.bagdasaryan.springkotlin.medkabinet.repository.impls
+package ru.bagdasaryan.springkotlin.medkabinet.storage.repository.impls
 
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
-import ru.bagdasaryan.springkotlin.medkabinet.exposed.tables.Doctors
-import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository
-import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository.DoctorDTO
+import ru.bagdasaryan.springkotlin.medkabinet.storage.tables.Doctors
+import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.DoctorRepository
+import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.DoctorRepository.DoctorDTO
 import ru.bagdasaryan.springkotlin.medkabinet.vo.Fio
 
 @Repository

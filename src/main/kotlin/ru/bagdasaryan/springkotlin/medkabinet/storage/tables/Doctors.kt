@@ -1,4 +1,4 @@
-package ru.bagdasaryan.springkotlin.medkabinet.exposed.tables
+package ru.bagdasaryan.springkotlin.medkabinet.storage.tables
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.date

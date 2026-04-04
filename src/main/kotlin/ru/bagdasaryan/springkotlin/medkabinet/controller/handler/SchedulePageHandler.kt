@@ -4,7 +4,7 @@ import kotlinx.html.*
 import org.springframework.stereotype.Component
 import ru.bagdasaryan.springkotlin.medkabinet.pages.NavItem
 import ru.bagdasaryan.springkotlin.medkabinet.pages.appLayout
-import ru.bagdasaryan.springkotlin.medkabinet.repository.DoctorRepository
+import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.DoctorRepository
 import ru.bagdasaryan.springkotlin.medkabinet.service.DoctorService
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -14,7 +14,6 @@ import java.util.Locale
 class SchedulePageHandler(
     private val doctorService: DoctorService
 ) {
-
     suspend fun renderPage(): String {
         val rows = doctorService.findAll().getOrThrow()
         val dateLabel = LocalDate.now()
@@ -43,7 +42,8 @@ class SchedulePageHandler(
             NavItem("Главная", "/"),
             NavItem("Расписание", "/schedule", active = true),
             NavItem("Пациенты", "/patients"),
-            NavItem("Врачи", "/doctors")
+            NavItem("Врачи", "/doctors"),
+            NavItem("Записи", "/appointments")
         )
     ) {
         div {
@@ -156,4 +156,3 @@ class SchedulePageHandler(
         }
     }
 }
-

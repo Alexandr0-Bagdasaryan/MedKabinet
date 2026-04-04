@@ -1,8 +1,6 @@
-package ru.bagdasaryan.springkotlin.medkabinet.exposed
+package ru.bagdasaryan.springkotlin.medkabinet.db
 
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManager
-import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
