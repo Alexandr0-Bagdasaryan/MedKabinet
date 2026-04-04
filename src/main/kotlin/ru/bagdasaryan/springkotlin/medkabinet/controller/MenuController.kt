@@ -25,20 +25,31 @@ class MenuController(
     private val findAvailableSlotsQuery: FindAvailableSlotsQuery,
     private val patientRepository: PatientRepository
 ) {
+    private val pageSize = 30
+
     @GetMapping("/schedule", produces = ["text/html; charset=UTF-8"])
     suspend fun schedulePage() = ResponseEntity.ok(schedulePageHandler.renderPage())
 
     @GetMapping("/doctors", produces = ["text/html; charset=UTF-8"])
-    suspend fun doctorsPage(@RequestParam(name = "q", required = false) q: String?) =
-        ResponseEntity.ok(doctorsPageHandler.renderPage(q))
+    suspend fun doctorsPage(
+        @RequestParam(name = "q", required = false) q: String?,
+        @RequestParam(name = "page", required = false, defaultValue = "1") page: Int
+    ) = ResponseEntity.ok(doctorsPageHandler.renderPage(q, page))
 
     @GetMapping("/doctors/search", produces = ["text/html; charset=UTF-8"])
     suspend fun doctorsSearch(@RequestParam(name = "q", required = false) q: String?) =
         ResponseEntity.ok(doctorsPageHandler.renderRows(q))
 
     @GetMapping("/appointments", produces = ["text/html; charset=UTF-8"])
-    suspend fun appointmentsPage(): ResponseEntity<String> {
-        val appointments = findAppointmentsQuery.execute().getOrThrow()
+    suspend fun appointmentsPage(
+        @RequestParam(name = "page", required = false, defaultValue = "1") page: Int
+    ): ResponseEntity<String> {
+        val safePage = page.coerceAtLeast(1)
+
+        val appointmentsFetched = findAppointmentsQuery.execute(safePage, pageSize).getOrThrow()
+        val hasNext = appointmentsFetched.size > pageSize
+        val appointments = appointmentsFetched.take(pageSize)
+
         val slots = findAvailableSlotsQuery.execute().getOrThrow()
         val patients = patientRepository.getAll().getOrThrow()
 
@@ -46,7 +57,10 @@ class MenuController(
             appointmentsPageHandler.renderPage(
                 appointments = appointments,
                 patients = patients,
-                slots = slots
+                slots = slots,
+                page = safePage,
+                hasPrev = safePage > 1,
+                hasNext = hasNext
             )
         )
     }

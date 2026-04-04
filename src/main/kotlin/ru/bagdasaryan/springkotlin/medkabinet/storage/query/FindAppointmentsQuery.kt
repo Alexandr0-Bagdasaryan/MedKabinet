@@ -13,7 +13,11 @@ import ru.bagdasaryan.springkotlin.medkabinet.storage.tables.Patients
 @Component
 class FindAppointmentsQuery {
 
-    suspend fun execute(): Result<List<AppointmentRowDTO>> = runCatching {
+    suspend fun execute(page: Int, pageSize: Int): Result<List<AppointmentRowDTO>> = runCatching {
+        val safePage = page.coerceAtLeast(1)
+        val safeSize = pageSize.coerceAtLeast(1)
+        val offset = (safePage - 1L) * safeSize
+
         newSuspendedTransaction {
             Appointments
                 .join(
@@ -31,7 +35,8 @@ class FindAppointmentsQuery {
                 .selectAll()
                 .orderBy(Appointments.appointmentDate to SortOrder.DESC)
                 .orderBy(Appointments.startTime to SortOrder.DESC)
-                .limit(200)
+                .limit(safeSize + 1)
+                .offset(offset)
                 .map { it.toDTO() }
         }
     }
