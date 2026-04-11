@@ -6,6 +6,7 @@ import kotlinx.html.ThScope
 import kotlinx.html.a
 import kotlinx.html.classes
 import kotlinx.html.div
+import kotlinx.html.id
 import kotlinx.html.li
 import kotlinx.html.span
 import kotlinx.html.table
@@ -26,6 +27,7 @@ fun <T> FlowContent.renderTableWithPagination(
     prevHref: String,
     nextHref: String,
     emptyMessage: String = "Нет данных",
+    tbodyId: String? = null,
     rowRenderer: TBODY.(T) -> Unit
 ) {
     div("card shadow-sm") {
@@ -44,6 +46,10 @@ fun <T> FlowContent.renderTableWithPagination(
                         }
                     }
                     tbody {
+                        if (!tbodyId.isNullOrBlank()) {
+                            id = tbodyId
+                        }
+
                         if (rows.isEmpty()) {
                             tr {
                                 td {

@@ -94,6 +94,10 @@ class DoctorsPageHandler(
                             value = q
                             classes = setOf("form-control")
                             placeholder = "Фильтр по ФИО"
+                            attributes["hx-get"] = "/doctors/search"
+                            attributes["hx-trigger"] = "keyup changed delay:300ms"
+                            attributes["hx-target"] = "#doctors-table-body"
+                            attributes["hx-swap"] = "innerHTML"
                         }
                     }
                     div("col-auto") {
@@ -123,7 +127,8 @@ class DoctorsPageHandler(
             hasNext = hasNext,
             prevHref = prevHref,
             nextHref = nextHref,
-            emptyMessage = "Врачи не найдены"
+            emptyMessage = "Врачи не найдены",
+            tbodyId = "doctors-table-body"
         ) { doctor ->
             tr {
                 td { +listOf(doctor.lastName, doctor.firstName, doctor.middleName).joinToString(" ").trim() }
