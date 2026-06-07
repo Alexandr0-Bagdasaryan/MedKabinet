@@ -37,3 +37,4 @@ init-scripts
 docker-compose.yml
 docker-compose-postgres.yml
 .env
+src/main/resources/application.yml
