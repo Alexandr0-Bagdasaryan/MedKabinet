@@ -3,7 +3,7 @@ package ru.bagdasaryan.springkotlin.medkabinet.storage.tables
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.time
-import org.jetbrains.exposed.sql.javatime.timestampWithTimeZone
+import org.jetbrains.exposed.sql.javatime.datetime
 
 object Appointments : IntIdTable("appointments") {
     val patientId = integer("patient_id")
@@ -15,6 +15,6 @@ object Appointments : IntIdTable("appointments") {
     val appointmentType = text("appointment_type")
     val status = text("status")
     val notes = text("notes").nullable()
-    val createdAt = timestampWithTimeZone("created_at")
-    val updatedAt = timestampWithTimeZone("updated_at")
+    val createdAt = datetime("created_at")
+    val updatedAt = datetime("updated_at")
 }

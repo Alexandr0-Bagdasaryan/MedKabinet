@@ -2,6 +2,8 @@ package ru.bagdasaryan.springkotlin.medkabinet.pages
 
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
+import org.springframework.security.core.context.SecurityContextHolder
+import ru.bagdasaryan.springkotlin.medkabinet.domain.UserRole
 
 data class NavItem(
     val label: String,
@@ -62,7 +64,7 @@ fun appLayout(
                     id = "mainNavbar"
 
                     ul("navbar-nav ms-auto mb-2 mb-lg-0") {
-                        nav.forEach { item ->
+                        visibleNavItems(nav).forEach { item ->
                             li("nav-item") {
                                 a(href = item.href, classes = buildString {
                                     append("nav-link")
@@ -71,6 +73,35 @@ fun appLayout(
                                     if (item.active) attributes["aria-current"] = "page"
                                     +item.label
                                 }
+                            }
+                        }
+                    }
+
+                    div("ms-lg-3 dropdown") {
+                        currentAuthInfo()?.let { auth ->
+                            button(type = ButtonType.button) {
+                                classes = setOf("btn", "btn-outline-light", "btn-sm", "dropdown-toggle")
+                                attributes["data-bs-toggle"] = "dropdown"
+                                attributes["aria-expanded"] = "false"
+                                +auth.username
+                            }
+                            ul("dropdown-menu dropdown-menu-end shadow") {
+                                li {
+                                    span("dropdown-item-text small text-muted") { +auth.role.title }
+                                }
+                                li { hr("dropdown-divider") }
+                                li {
+                                    form(action = "/logout", method = FormMethod.post) {
+                                        button(type = ButtonType.submit) {
+                                            classes = setOf("dropdown-item")
+                                            +"Выход"
+                                        }
+                                    }
+                                }
+                            }
+                        } ?: run {
+                            a(href = "/login", classes = "btn btn-outline-light btn-sm") {
+                                +"Войти"
                             }
                         }
                     }
@@ -144,5 +175,30 @@ fun appLayout(
 """.trimIndent()
             }
         }
+    }
+}
+
+private data class CurrentAuthInfo(
+    val username: String,
+    val role: UserRole
+)
+
+private fun currentAuthInfo(): CurrentAuthInfo? {
+    val authentication = SecurityContextHolder.getContext().authentication ?: return null
+    if (!authentication.isAuthenticated) return null
+
+    val principal = authentication.principal
+    if (principal !is ru.bagdasaryan.springkotlin.medkabinet.security.AuthUserPrincipal) return null
+
+    return CurrentAuthInfo(
+        username = principal.username,
+        role = principal.role
+    )
+}
+
+private fun visibleNavItems(items: List<NavItem>): List<NavItem> {
+    val role = currentAuthInfo()?.role ?: return items
+    return items.filterNot { item ->
+        role == UserRole.PATIENT && item.href in setOf("/", "/patients", "/appointments")
     }
 }

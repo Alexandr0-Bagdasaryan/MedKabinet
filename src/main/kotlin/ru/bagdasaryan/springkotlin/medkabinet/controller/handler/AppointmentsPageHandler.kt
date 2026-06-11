@@ -18,23 +18,27 @@ import kotlinx.html.td
 import kotlinx.html.textArea
 import kotlinx.html.tr
 import org.springframework.stereotype.Component
+import ru.bagdasaryan.springkotlin.medkabinet.domain.AppointmentStatus
+import ru.bagdasaryan.springkotlin.medkabinet.domain.AppointmentType
+import ru.bagdasaryan.springkotlin.medkabinet.domain.PatientEntity
 import ru.bagdasaryan.springkotlin.medkabinet.pages.NavItem
 import ru.bagdasaryan.springkotlin.medkabinet.pages.appLayout
 import ru.bagdasaryan.springkotlin.medkabinet.pages.renderTableWithPagination
 import ru.bagdasaryan.springkotlin.medkabinet.storage.query.FindAppointmentsQuery
 import ru.bagdasaryan.springkotlin.medkabinet.storage.query.FindAvailableSlotsQuery
-import ru.bagdasaryan.springkotlin.medkabinet.storage.repository.PatientRepository
 
 @Component
 class AppointmentsPageHandler {
 
     fun renderPage(
         appointments: List<FindAppointmentsQuery.AppointmentRowDTO>,
-        patients: List<PatientRepository.PatientDTO>,
+        patients: List<PatientEntity>,
         slots: List<FindAvailableSlotsQuery.TimeSlotOptionDTO>,
         page: Int,
         hasPrev: Boolean,
-        hasNext: Boolean
+        hasNext: Boolean,
+        errorMessage: String?,
+        doctorScope: Boolean = false
     ): String = appLayout(
         pageTitle = "Записи",
         brandHref = "/",
@@ -48,13 +52,19 @@ class AppointmentsPageHandler {
     ) {
         div {
             classes = setOf("d-flex", "justify-content-between", "align-items-center", "mb-3")
-            h1("h3 mb-0") { +"Записи к врачам" }
+            h1("h3 mb-0") { +(if (doctorScope) "Мои записи" else "Записи к врачам") }
             span("text-muted") { +"Страница $page" }
         }
 
         div("card shadow-sm mb-4") {
-            div("card-header") { +"Новая запись" }
+            div("card-header") { +(if (doctorScope) "Новая запись к вам" else "Новая запись") }
             div("card-body") {
+                if (!errorMessage.isNullOrBlank()) {
+                    div("alert alert-danger mb-3") {
+                        +errorMessage
+                    }
+                }
+
                 form(action = "/appointments", method = FormMethod.post) {
                     div("row g-3") {
                         div("col-12 col-md-6") {
@@ -76,8 +86,8 @@ class AppointmentsPageHandler {
 
                                 patients.forEach { p ->
                                     option {
-                                        value = p.id
-                                        +"${p.fio} (${p.cardNumber})"
+                                        value = p.id.value.toString()
+                                        +"${p.fio.value} (${p.medicalCardNumber.value})"
                                     }
                                 }
                             }
@@ -102,8 +112,8 @@ class AppointmentsPageHandler {
 
                                 slots.forEach { s ->
                                     option {
-                                        value = s.id
-                                        +"${s.slotDate} ${s.startTime}-${s.endTime} | ${s.doctorFio}"
+                                        value = s.id.value.toString()
+                                        +"${s.slotDate} ${s.startTime.value}-${s.endTime.value} | ${s.doctorFio.value}"
                                     }
                                 }
                             }
@@ -115,12 +125,49 @@ class AppointmentsPageHandler {
                                 htmlFor = "appointmentType"
                                 +"Тип приема"
                             }
-                            input(InputType.text) {
+                            select {
                                 id = "appointmentType"
                                 name = "appointmentType"
-                                classes = setOf("form-control")
-                                placeholder = "Первичный прием"
+                                classes = setOf("form-select")
                                 required = true
+
+                                option {
+                                    value = ""
+                                    +"Выберите тип приема"
+                                }
+
+                                AppointmentType.entries.forEach { type ->
+                                    option {
+                                        value = type.value
+                                        +type.title
+                                    }
+                                }
+                            }
+                        }
+
+                        div("col-12 col-md-6") {
+                            label {
+                                classes = setOf("form-label")
+                                htmlFor = "appointmentStatus"
+                                +"Статус"
+                            }
+                            select {
+                                id = "appointmentStatus"
+                                name = "appointmentStatus"
+                                classes = setOf("form-select")
+                                required = true
+
+                                option {
+                                    value = ""
+                                    +"Выберите статус"
+                                }
+
+                                AppointmentStatus.entries.forEach { status ->
+                                    option {
+                                        value = status.value
+                                        +status.title
+                                    }
+                                }
                             }
                         }
 
@@ -161,13 +208,13 @@ class AppointmentsPageHandler {
             emptyMessage = "Записей пока нет"
         ) { a ->
             tr {
-                td { +a.appointmentDate }
-                td { +"${a.startTime} - ${a.endTime}" }
-                td { +a.doctorFio }
-                td { +a.patientFio }
-                td { +a.appointmentType }
-                td { +a.status }
-                td { +(a.notes ?: "-") }
+                td { +a.appointmentDate.toString() }
+                td { +"${a.startTime.value} - ${a.endTime.value}" }
+                td { +a.doctorFio.value }
+                td { +a.patientFio.value }
+                td { +a.appointmentType.title }
+                td { +a.status.title }
+                td { +(a.notes?.value ?: "-") }
             }
         }
     }
