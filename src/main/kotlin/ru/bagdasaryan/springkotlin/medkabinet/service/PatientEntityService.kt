@@ -40,6 +40,9 @@ class PatientService(
     suspend fun findById(id: PatientId): Result<PatientEntity?> =
         patientRepository.findById(id).mapCatching { it?.toEntity() }
 
+    suspend fun findByMedicalCardNumber(medicalCardNumber: MedicalCardNumber): Result<PatientEntity?> =
+        patientRepository.findByMedicalCardNumber(medicalCardNumber).mapCatching { it?.toEntity() }
+
     suspend fun existsById(id: PatientId): Result<Boolean> =
         patientRepository.existsById(id)
 

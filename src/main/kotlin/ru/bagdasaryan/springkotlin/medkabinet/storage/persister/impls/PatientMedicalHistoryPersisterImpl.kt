@@ -1,6 +1,5 @@
 package ru.bagdasaryan.springkotlin.medkabinet.storage.persister.impls
 
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update

@@ -28,7 +28,8 @@ fun appLayout(
     pageTitle: String,
     brandName: String = "TALUS",
     brandHref: String = "/",
-    logoUrl: String = "/img/talus_navbar_logo.svg",
+    logoUrl: String = "/img/talus_n" +
+            "avbar_logo.svg",
     nav: List<NavItem>,
     content: FlowContent.() -> Unit
 ): String = createHTML().html {
@@ -40,7 +41,6 @@ fun appLayout(
     }
 
     body {
-        // Navbar (бренд + collapse + ссылки)
         nav {
             classes = setOf("navbar", "navbar-expand-lg", "navbar-dark", "bg-primary", "py-1")
             div("container") {

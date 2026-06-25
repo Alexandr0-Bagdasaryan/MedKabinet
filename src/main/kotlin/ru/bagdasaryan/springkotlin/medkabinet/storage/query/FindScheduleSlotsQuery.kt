@@ -3,7 +3,6 @@ package ru.bagdasaryan.springkotlin.medkabinet.storage.query
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Component
@@ -13,7 +12,6 @@ import ru.bagdasaryan.springkotlin.medkabinet.domain.DepartmentRoomNumber
 import ru.bagdasaryan.springkotlin.medkabinet.domain.DoctorId
 import ru.bagdasaryan.springkotlin.medkabinet.domain.ScheduleId
 import ru.bagdasaryan.springkotlin.medkabinet.domain.TimeSlotId
-import ru.bagdasaryan.springkotlin.medkabinet.domain.TimeSlotEntity
 import ru.bagdasaryan.springkotlin.medkabinet.domain.SpecializationName
 import ru.bagdasaryan.springkotlin.medkabinet.domain.vo.Fio
 import ru.bagdasaryan.springkotlin.medkabinet.domain.vo.TimeOfDay

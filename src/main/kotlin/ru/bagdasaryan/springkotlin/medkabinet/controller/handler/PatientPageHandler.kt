@@ -3,6 +3,7 @@ package ru.bagdasaryan.springkotlin.medkabinet.controller.handler
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
+import kotlinx.html.FormEncType
 import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.button
@@ -114,7 +115,8 @@ class PatientPageHandler {
         page: Int,
         errorMessage: String? = null,
         canCreatePatient: Boolean = true,
-        canEditPatient: Boolean = true
+        canEditPatient: Boolean = true,
+        canImportCsv: Boolean = false
     ): String {
         val safePage = page.coerceAtLeast(1)
         val fromIndex = (safePage - 1) * pageSize
@@ -142,6 +144,32 @@ class PatientPageHandler {
 
             if (!errorMessage.isNullOrBlank()) {
                 div("alert alert-danger") { +errorMessage }
+            }
+
+            if (canImportCsv) {
+                div("card shadow-sm mb-3") {
+                    div("card-body") {
+                        div("d-flex justify-content-between align-items-center flex-wrap gap-3") {
+                            div {
+                                strong { +"Импорт CSV" }
+                                div("text-muted small") { +"Поддерживается CSV, выгруженный из карточки пациента" }
+                            }
+                            form(action = "/patients/import", method = FormMethod.post) {
+                                encType = FormEncType.multipartFormData
+                                classes = setOf("d-flex", "gap-2", "align-items-center", "flex-wrap")
+                                input(InputType.file) {
+                                    name = "file"
+                                    classes = setOf("form-control")
+                                    attributes["accept"] = ".csv,text/csv"
+                                }
+                                button(type = ButtonType.submit) {
+                                    classes = setOf("btn", "btn-outline-primary")
+                                    +"Импортировать"
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             renderTableWithPagination(
@@ -347,6 +375,9 @@ class PatientPageHandler {
                                     a(href = "/appointments?patientId=${patient.id.value}", classes = "btn btn-outline-secondary") {
                                         +"Записать на прием"
                                     }
+                                }
+                                a(href = "/patients/${patient.id.value}/export", classes = "btn btn-outline-dark") {
+                                    +"Экспорт CSV"
                                 }
                             }
                         }

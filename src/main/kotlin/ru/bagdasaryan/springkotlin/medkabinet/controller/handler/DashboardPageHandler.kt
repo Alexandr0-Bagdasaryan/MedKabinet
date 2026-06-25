@@ -1,8 +1,6 @@
 package ru.bagdasaryan.springkotlin.medkabinet.controller.handler
 
 import kotlinx.html.FlowContent
-import kotlinx.html.a
-import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2

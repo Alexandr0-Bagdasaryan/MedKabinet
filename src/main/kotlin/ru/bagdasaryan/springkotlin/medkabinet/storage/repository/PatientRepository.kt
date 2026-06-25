@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 interface PatientRepository {
     suspend fun getAll(): Result<List<PatientDTO>>
     suspend fun findById(id: PatientId): Result<PatientDTO?>
+    suspend fun findByMedicalCardNumber(medicalCardNumber: MedicalCardNumber): Result<PatientDTO?>
     suspend fun existsById(id: PatientId): Result<Boolean>
 
     class PatientDTO(

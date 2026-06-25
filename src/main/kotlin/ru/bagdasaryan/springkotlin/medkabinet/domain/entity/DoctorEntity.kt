@@ -8,7 +8,6 @@ import ru.bagdasaryan.springkotlin.medkabinet.domain.DoctorLicenseNumber
 import ru.bagdasaryan.springkotlin.medkabinet.domain.PhoneNumber
 import ru.bagdasaryan.springkotlin.medkabinet.domain.SpecializationId
 import ru.bagdasaryan.springkotlin.medkabinet.domain.vo.Fio
-import ru.bagdasaryan.springkotlin.medkabinet.service.AppointmentService
 import java.time.LocalDate
 import java.time.LocalDateTime
 

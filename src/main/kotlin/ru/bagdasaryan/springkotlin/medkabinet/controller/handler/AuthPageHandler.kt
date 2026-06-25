@@ -51,7 +51,7 @@ class AuthPageHandler {
                                 input(InputType.text) {
                                     name = "username"
                                     classes = setOf("form-control")
-                                    placeholder = "admin, doctor.petrov, patient.anna"
+                                    placeholder = "doctor.petrov"
                                     required = true
                                 }
                             }
@@ -73,16 +73,6 @@ class AuthPageHandler {
                                     +"Войти"
                                 }
                             }
-                        }
-
-                        div("mt-4 small text-muted") {
-                            +"Демо-доступ:"
-                            br { }
-                            +"Администратор: admin / admin123"
-                            br { }
-                            +"Врач: doctor.1 / doctor123"
-                            br { }
-                            +"Пациент: patient.anna / patient123"
                         }
                     }
                 }

@@ -1,7 +1,9 @@
 package ru.bagdasaryan.springkotlin.medkabinet.domain
 
+import java.io.Serializable
+
 @JvmInline
-value class Username(val value: String) {
+value class Username(val value: String) : Serializable {
     companion object {
         fun create(raw: String): Result<Username> = runCatching {
             val normalized = raw.trim()

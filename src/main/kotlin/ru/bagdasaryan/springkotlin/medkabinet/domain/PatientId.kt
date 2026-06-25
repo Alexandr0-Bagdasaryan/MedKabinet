@@ -1,6 +1,8 @@
 package ru.bagdasaryan.springkotlin.medkabinet.domain
-@JvmInline
-value class PatientId(val value: Int) {
+
+import java.io.Serializable
+
+data class PatientId(val value: Int) : Serializable {
     init { require(value > 0) { "Идентификатор пациента должен быть положительным" } }
 
     companion object {

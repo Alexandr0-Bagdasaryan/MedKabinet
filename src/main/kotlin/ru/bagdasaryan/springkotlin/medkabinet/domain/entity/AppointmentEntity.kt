@@ -1,5 +1,6 @@
 package ru.bagdasaryan.springkotlin.medkabinet.domain
 
+import ru.bagdasaryan.springkotlin.medkabinet.domain.DoctorId
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

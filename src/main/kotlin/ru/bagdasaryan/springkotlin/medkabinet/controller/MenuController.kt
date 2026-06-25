@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import ru.bagdasaryan.springkotlin.medkabinet.controller.handler.AuthPageHandler
 import ru.bagdasaryan.springkotlin.medkabinet.controller.handler.AppointmentsPageHandler
 import ru.bagdasaryan.springkotlin.medkabinet.controller.handler.DashboardPageHandler
@@ -49,6 +50,7 @@ import ru.bagdasaryan.springkotlin.medkabinet.domain.vo.Fio
 import ru.bagdasaryan.springkotlin.medkabinet.domain.vo.MedicalCardNumber
 import ru.bagdasaryan.springkotlin.medkabinet.security.SecurityScopeService
 import ru.bagdasaryan.springkotlin.medkabinet.service.PatientMedicalHistoryService
+import ru.bagdasaryan.springkotlin.medkabinet.service.PatientCsvTransferService
 import ru.bagdasaryan.springkotlin.medkabinet.service.AppointmentService
 import ru.bagdasaryan.springkotlin.medkabinet.service.DepartmentService
 import ru.bagdasaryan.springkotlin.medkabinet.service.DoctorService
@@ -75,7 +77,8 @@ class MenuController(
     private val specializationService: SpecializationService,
     private val patientService: PatientService,
     private val securityScopeService: SecurityScopeService,
-    private val patientMedicalHistoryService: PatientMedicalHistoryService
+    private val patientMedicalHistoryService: PatientMedicalHistoryService,
+    private val patientCsvTransferService: PatientCsvTransferService
 ) {
     private val pageSize = 30
 
@@ -269,6 +272,23 @@ class MenuController(
         )
     }
 
+    @GetMapping("/patients/{id}/export", produces = ["text/csv; charset=UTF-8"])
+    suspend fun exportPatientCsv(
+        @PathVariable id: Int
+    ): ResponseEntity<Any> {
+        val patientId = PatientId.create(id).getOrThrow()
+        if (!canAccessPatient(patientId)) {
+            return forbiddenPage("Вы можете выгружать только доступные вам данные пациента")
+        }
+
+        val exported = patientCsvTransferService.exportPatientCsv(patientId).getOrThrow()
+        val bytes = ("﻿" + exported.content).toByteArray(StandardCharsets.UTF_8)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${exported.fileName}\"")
+            .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+            .body(bytes)
+    }
+
     @GetMapping("/patients", produces = ["text/html; charset=UTF-8"])
     suspend fun patientsPage(
         @RequestParam(name = "page", required = false, defaultValue = "1") page: Int,
@@ -284,9 +304,52 @@ class MenuController(
                 page = page,
                 errorMessage = error,
                 canCreatePatient = securityScopeService.isAdmin(),
-                canEditPatient = securityScopeService.isAdmin()
+                canEditPatient = securityScopeService.isAdmin(),
+                canImportCsv = securityScopeService.isAdmin()
             )
         )
+    }
+
+    @PostMapping("/patients/import")
+    suspend fun importPatientCsv(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Any> {
+        if (file.isEmpty) {
+            val patients = patientService.findAll().getOrThrow()
+            return ResponseEntity.ok(
+                patientPageHandler.renderListPage(
+                    patients = patients,
+                    page = 1,
+                    errorMessage = "Выберите CSV-файл для импорта",
+                    canCreatePatient = true,
+                    canEditPatient = true,
+                    canImportCsv = true
+                )
+            )
+        }
+
+        val result = runCatching {
+            val content = file.bytes.toString(StandardCharsets.UTF_8)
+            patientCsvTransferService.importPatientCsv(content).getOrThrow()
+        }
+
+        if (result.isFailure) {
+            val patients = patientService.findAll().getOrThrow()
+            return ResponseEntity.ok(
+                patientPageHandler.renderListPage(
+                    patients = patients,
+                    page = 1,
+                    errorMessage = result.exceptionOrNull()?.message ?: "Не удалось импортировать CSV-файл",
+                    canCreatePatient = true,
+                    canEditPatient = true,
+                    canImportCsv = true
+                )
+            )
+        }
+
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+            .header(HttpHeaders.LOCATION, "/patients/${result.getOrThrow().value}")
+            .build()
     }
 
     @GetMapping("/patients/{patientId}/history/{historyId}/edit", produces = ["text/html; charset=UTF-8"])

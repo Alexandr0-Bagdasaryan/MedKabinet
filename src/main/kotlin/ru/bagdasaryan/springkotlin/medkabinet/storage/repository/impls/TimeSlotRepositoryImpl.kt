@@ -1,7 +1,6 @@
 package ru.bagdasaryan.springkotlin.medkabinet.storage.repository.impls
 
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository

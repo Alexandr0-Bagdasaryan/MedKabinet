@@ -38,6 +38,15 @@ class PatientRepositoryImpl : PatientRepository {
         }
     }
 
+    override suspend fun findByMedicalCardNumber(medicalCardNumber: MedicalCardNumber): Result<PatientRepository.PatientDTO?> = runCatching {
+        newSuspendedTransaction {
+            Patients.selectAll()
+                .where { Patients.medicalCardNumber eq medicalCardNumber.value }
+                .singleOrNull()
+                ?.toDTO()
+        }
+    }
+
     override suspend fun getAll(): Result<List<PatientRepository.PatientDTO>> = runCatching {
         newSuspendedTransaction {
             Patients.selectAll()
